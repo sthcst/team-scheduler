@@ -26,7 +26,7 @@ function App() {
 
   const fetchScheduleData = async () => {
     try {
-      const response = await axios.get('/api/schedule-data');
+      const response = await axios.get(`${API_BASE_URL}/api/schedule-data`);
       if (response.data.shiftTimes) setShiftTimes(response.data.shiftTimes);
       if (response.data.teamMembers) setTeamMembers(response.data.teamMembers);
       if (response.data.semesterType) setConfig({
@@ -43,7 +43,7 @@ function App() {
   const handleShiftTimesSubmit = async (times) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/shift-times', times);
+      const response = await axios.post(`${API_BASE_URL}/api/shift-times`, times);
       setShiftTimes(response.data.data);
       setCurrentStep(2);
       setError(null);
@@ -57,7 +57,7 @@ function App() {
   const handleTeamMemberSubmit = async (member) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/team-member', member);
+      const response = await axios.post(`${API_BASE_URL}/api/team-member`, member);
       setTeamMembers(response.data.data);
       setError(null);
     } catch (err) {
@@ -70,7 +70,7 @@ function App() {
   const handleRemoveMember = async (index) => {
     try {
       setLoading(true);
-      const response = await axios.delete(`/api/team-member/${index}`);
+      const response = await axios.delete(`${API_BASE_URL}/api/team-member/${index}`);
       setTeamMembers(response.data.data);
       setError(null);
     } catch (err) {
@@ -83,7 +83,7 @@ function App() {
   const handleConfigSubmit = async (configData) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/config', configData);
+      const response = await axios.post(`${API_BASE_URL}/api/config`, configData);
       setConfig(configData);
       setCurrentStep(4);
       setError(null);
@@ -97,7 +97,7 @@ function App() {
   const handleGenerateSchedule = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/generate-schedule', { maxHoursPerPerson: maxHours });
+      const response = await axios.post(`${API_BASE_URL}/api/generate-schedule`, { maxHoursPerPerson: maxHours });
       setSchedule(response.data.data);
       setError(null);
     } catch (err) {
@@ -110,7 +110,7 @@ function App() {
   const handleReset = async () => {
     try {
       setLoading(true);
-      await axios.post('/api/reset');
+      await axios.post(`${API_BASE_URL}/api/reset`);
       setCurrentStep(1);
       setShiftTimes(null);
       setTeamMembers([]);
