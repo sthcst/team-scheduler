@@ -238,26 +238,25 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
     const meetingStartTime = convertTimeToMinutes(teamMeetingTime.startTime);
     const meetingEndTime = convertTimeToMinutes(teamMeetingTime.endTime);
     const meetingDurationHours = (meetingEndTime - meetingStartTime) / 60;
+    const meetingDay = teamMeetingTime.day;
     
-    // Find all time slots that fall within the meeting time
-    days.forEach(day => {
-      timeSlots.forEach((timeSlot, slotIndex) => {
-        const slotStartTime = convertTimeToMinutes(timeSlot);
-        const slotEndTime = slotStartTime + 30; // 30-minute slots
+    // Find all time slots on the meeting day that fall within the meeting time
+    timeSlots.forEach((timeSlot, slotIndex) => {
+      const slotStartTime = convertTimeToMinutes(timeSlot);
+      const slotEndTime = slotStartTime + 30; // 30-minute slots
+      
+      // Check if this slot overlaps with meeting time
+      if (slotStartTime >= meetingStartTime && slotStartTime < meetingEndTime) {
+        // Add all team members to this time slot (only on the meeting day)
+        schedule[meetingDay][slotIndex].assignedMembers = memberAvailability.map(m => m.name);
         
-        // Check if this slot overlaps with meeting time
-        if (slotStartTime >= meetingStartTime && slotStartTime < meetingEndTime) {
-          // Add all team members to this time slot
-          schedule[day][slotIndex].assignedMembers = memberAvailability.map(m => m.name);
-          
-          // Add meeting time to each member's hours and shifts
-          memberAvailability.forEach(member => {
-            // Add 0.5 hours per slot for meeting (since each slot is 30 min)
-            member.assignedHours += 0.5;
-            member.shifts.push({ day, time: timeSlot, isMeeting: true });
-          });
-        }
-      });
+        // Add meeting time to each member's hours and shifts
+        memberAvailability.forEach(member => {
+          // Add 0.5 hours per slot for meeting (since each slot is 30 min)
+          member.assignedHours += 0.5;
+          member.shifts.push({ day: meetingDay, time: timeSlot, isMeeting: true });
+        });
+      }
     });
   }
   
