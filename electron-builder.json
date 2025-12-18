@@ -1,0 +1,48 @@
+{
+  "build": {
+    "appId": "com.teamscheduler.app",
+    "productName": "Team Schedule Generator",
+    "files": [
+      "public/**/*",
+      "client/build/**/*",
+      "server.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Team Schedule Generator"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.exe"
+    }
+  }
+}
