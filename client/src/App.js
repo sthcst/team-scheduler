@@ -6,6 +6,9 @@ import TeamMemberForm from './components/TeamMemberForm';
 import ConfigForm from './components/ConfigForm';
 import ScheduleDisplay from './components/ScheduleDisplay';
 
+// API base URL - uses environment variable in production, falls back to proxy for development
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
   const [shiftTimes, setShiftTimes] = useState(null);
