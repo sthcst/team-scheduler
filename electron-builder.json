@@ -8,17 +8,6 @@
     "package.json",
     "node_modules/**/*"
   ],
-  "extraFiles": [
-    {
-      "from": ".",
-      "to": ".",
-      "filter": ["server.js", "package.json"]
-    },
-    {
-      "from": "node_modules",
-      "to": "node_modules"
-    }
-  ],
   "directories": {
     "buildResources": "assets"
   },
@@ -28,7 +17,9 @@
         "target": "portable",
         "arch": ["x64"]
       }
-    ]
+    ],
+    "forceCodeSigning": false,
+    "signExts": []
   },
   "portable": {
     "artifactName": "${productName}-${version}-portable.exe"

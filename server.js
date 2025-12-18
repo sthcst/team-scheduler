@@ -261,10 +261,15 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
     });
   }
   
-  // Validate hour limits
+  // Validate hour limits with tolerance (allow ±2 hours from target)
+  const warnings = [];
+  const hourTolerance = 2;
+  
   memberAvailability.forEach(member => {
-    if (member.assignedHours > maxHoursPerPerson) {
-      throw new Error(`${member.name} exceeds maximum hours (${member.assignedHours}/${maxHoursPerPerson})`);
+    if (member.assignedHours > maxHoursPerPerson + hourTolerance) {
+      warnings.push(`${member.name} exceeds maximum hours by more than tolerance (${member.assignedHours}/${maxHoursPerPerson}). Consider adjusting availability.`);
+    } else if (member.assignedHours > maxHoursPerPerson) {
+      warnings.push(`${member.name} is assigned ${member.assignedHours} hours (${Math.round((member.assignedHours - maxHoursPerPerson) * 10) / 10} hours over target of ${maxHoursPerPerson})`);
     }
   });
   
@@ -273,7 +278,7 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
     memberAssignments: memberAvailability,
     workspaceAssignments: workspaceSchedule,
     totalMeetingHours,
-    warnings: []
+    warnings: warnings
   };
 }
 
