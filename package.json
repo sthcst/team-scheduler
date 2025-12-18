@@ -2,8 +2,8 @@
   "name": "team-scheduler",
   "version": "1.0.0",
   "description": "Team schedule generator application",
+  "author": "Team Scheduler",
   "main": "public/electron.js",
-  "homepage": "./",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
