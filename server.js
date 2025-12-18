@@ -176,10 +176,15 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
     timeSlots.forEach((timeSlot, slotIndex) => {
       let assignedThisSlot = [];
       
-      // First pass: try to assign members for minimum coverage
+      // First pass: try to assign members for minimum coverage, respecting workspace limit
       for (let memberIdx = 0; memberIdx < memberAvailability.length; memberIdx++) {
         const member = memberAvailability[memberIdx];
         const slotKey = `${dayIndex}-${slotIndex}`;
+        
+        // **IMPORTANT: Stop assigning if we've reached the workspace limit**
+        if (assignedThisSlot.length >= numWorkspaces) {
+          break;
+        }
         
         // Check if member is available and within hour limit
         if (member.availableSlots.includes(slotKey) && member.assignedHours < maxHoursPerPerson) {
@@ -193,18 +198,16 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
             
             // Update workspace
             const workspaceIdx = assignedThisSlot.length - 1;
-            if (workspaceIdx < numWorkspaces) {
-              const workspace = workspaceSchedule[workspaceIdx];
-              if (!workspace.assignedMembers.includes(member.name)) {
-                workspace.assignedMembers.push(member.name);
-              }
-              workspace.totalHours += 0.5;
+            const workspace = workspaceSchedule[workspaceIdx];
+            if (!workspace.assignedMembers.includes(member.name)) {
+              workspace.assignedMembers.push(member.name);
             }
+            workspace.totalHours += 0.5;
           }
         }
       }
       
-      // Ensure at least one person per slot
+      // Ensure at least one person per slot (but don't exceed workspace limit)
       if (assignedThisSlot.length === 0) {
         // Find someone available for this slot
         for (let memberIdx = 0; memberIdx < memberAvailability.length; memberIdx++) {

@@ -8,6 +8,17 @@
     "package.json",
     "node_modules/**/*"
   ],
+  "extraFiles": [
+    {
+      "from": ".",
+      "to": ".",
+      "filter": ["server.js", "package.json"]
+    },
+    {
+      "from": "node_modules",
+      "to": "node_modules"
+    }
+  ],
   "directories": {
     "buildResources": "assets"
   },

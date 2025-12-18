@@ -1,7 +1,6 @@
 const { app, BrowserWindow, Menu } = require('electron');
-const isDev = require('electron-is-dev');
 const path = require('path');
-const spawn = require('child_process').spawn;
+const { spawn } = require('child_process');
 
 let mainWindow;
 let server;
@@ -20,15 +19,12 @@ function createWindow() {
     icon: path.join(__dirname, 'assets', 'icon.ico')
   });
 
-  const startUrl = isDev
-    ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../client/build/index.html')}`;
+  // Always use built files
+  const buildPath = path.join(__dirname, '../client/build/index.html');
+  const startUrl = `file://${buildPath}`;
 
+  console.log('Loading URL:', startUrl);
   mainWindow.loadURL(startUrl);
-
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -37,26 +33,36 @@ function createWindow() {
 
 function startServer() {
   return new Promise((resolve) => {
-    server = spawn('node', ['server.js'], {
-      cwd: __dirname,
-      stdio: 'inherit',
-      shell: true
-    });
+    try {
+      const rootDir = path.join(__dirname, '..');
+      const serverPath = path.join(rootDir, 'server.js');
+      
+      console.log('Starting server from:', serverPath);
+      
+      server = spawn('node', [serverPath], {
+        cwd: rootDir,
+        stdio: 'ignore',
+        detached: true
+      });
 
-    server.on('error', (err) => {
-      console.error('Failed to start server:', err);
-    });
+      server.unref();
+      console.log('Backend server started');
+    } catch (err) {
+      console.log('Server already running or error:', err.message);
+    }
 
-    // Wait for server to start
+    // Wait for server to be ready
     setTimeout(resolve, 2000);
   });
 }
 
 app.on('ready', async () => {
+  console.log('Electron app ready');
+  
   // Start backend server
   await startServer();
   
-  // Wait a moment then create window
+  // Create window
   setTimeout(createWindow, 500);
 });
 
@@ -74,45 +80,11 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   if (server) {
-    server.kill();
+    try {
+      process.kill(-server.pid);
+    } catch (e) {
+      // Already stopped
+    }
   }
 });
 
-// Create menu
-if (isDev) {
-  Menu.setApplicationMenu(
-    Menu.buildFromTemplate([
-      {
-        label: 'File',
-        submenu: [
-          {
-            label: 'Exit',
-            accelerator: 'CmdOrCtrl+Q',
-            click: () => {
-              app.quit();
-            }
-          }
-        ]
-      },
-      {
-        label: 'View',
-        submenu: [
-          {
-            label: 'Reload',
-            accelerator: 'CmdOrCtrl+R',
-            click: () => {
-              mainWindow.reload();
-            }
-          },
-          {
-            label: 'Toggle Dev Tools',
-            accelerator: 'CmdOrCtrl+I',
-            click: () => {
-              mainWindow.webContents.toggleDevTools();
-            }
-          }
-        ]
-      }
-    ])
-  );
-}
