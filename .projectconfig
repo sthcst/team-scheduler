@@ -1,0 +1,46 @@
+{
+  "name": "Team Scheduler",
+  "version": "1.0.0",
+  "description": "Team Schedule Generator - Manage shifts, availability, and workspaces",
+  "scripts": {
+    "start": "Backend server on port 5000",
+    "dev": "Backend with auto-reload (requires nodemon)",
+    "client": "Frontend on port 3000",
+    "build": "Build React frontend for production"
+  },
+  "features": {
+    "shift_management": "Define shift times for entire week",
+    "team_members": "Add team members with class schedules",
+    "availability": "30-minute time block grid (Monday-Saturday)",
+    "semester_types": "Regular semester and break modes",
+    "meetings": "Team meeting time allocation",
+    "workspaces": "Multi-workspace capacity management",
+    "hour_limits": "Strict maximum hours enforcement",
+    "schedule_generation": "Intelligent algorithm for fair distribution"
+  },
+  "tech_stack": {
+    "backend": ["Node.js", "Express", "CORS"],
+    "frontend": ["React 18", "Axios", "CSS3"],
+    "styling": "Modern responsive design"
+  },
+  "api_endpoints": {
+    "POST /api/shift-times": "Set shift times",
+    "POST /api/team-member": "Add team member",
+    "DELETE /api/team-member/:index": "Remove team member",
+    "POST /api/config": "Configure schedule",
+    "POST /api/generate-schedule": "Generate schedule",
+    "GET /api/schedule-data": "Get current data",
+    "POST /api/reset": "Reset all data"
+  },
+  "development": {
+    "recommended_setup": "Two terminals",
+    "terminal_1": "npm start (backend)",
+    "terminal_2": "npm run client (frontend)",
+    "access_url": "http://localhost:3000"
+  },
+  "production": {
+    "build": "npm run build",
+    "start": "npm start",
+    "access_url": "http://localhost:5000"
+  }
+}
