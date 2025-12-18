@@ -45,7 +45,7 @@ function App() {
       setLoading(true);
       const response = await axios.post(`${API_BASE_URL}/api/shift-times`, times);
       setShiftTimes(response.data.data);
-      setCurrentStep(2);
+      setCurrentStep(3);  // Move to Team Members
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || 'Error setting shift times');
@@ -85,13 +85,17 @@ function App() {
       setLoading(true);
       const response = await axios.post(`${API_BASE_URL}/api/config`, configData);
       setConfig(configData);
-      setCurrentStep(4);
+      setCurrentStep(2);  // Move to Shift Times
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || 'Error setting configuration');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTeamMembersComplete = () => {
+    setCurrentStep(4);  // Move to Generate Schedule
   };
 
   const handleGenerateSchedule = async () => {
@@ -134,26 +138,26 @@ function App() {
         {error && <div className="error-message">{error}</div>}
 
         {currentStep === 1 && (
+          <ConfigForm 
+            onSubmit={handleConfigSubmit}
+            loading={loading}
+          />
+        )}
+
+        {currentStep === 2 && (
           <ShiftTimesForm 
             onSubmit={handleShiftTimesSubmit}
             loading={loading}
           />
         )}
 
-        {currentStep === 2 && (
+        {currentStep === 3 && (
           <TeamMemberForm 
             shiftTimes={shiftTimes}
             teamMembers={teamMembers}
             onAddMember={handleTeamMemberSubmit}
             onRemoveMember={handleRemoveMember}
-            onNext={() => setCurrentStep(3)}
-            loading={loading}
-          />
-        )}
-
-        {currentStep === 3 && (
-          <ConfigForm 
-            onSubmit={handleConfigSubmit}
+            onNext={handleTeamMembersComplete}
             loading={loading}
           />
         )}
