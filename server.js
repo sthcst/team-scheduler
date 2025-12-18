@@ -247,21 +247,15 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
         
         // Check if this slot overlaps with meeting time
         if (slotStartTime >= meetingStartTime && slotStartTime < meetingEndTime) {
-          // Assign team members up to workspace capacity
-          // Sort by current assigned hours to distribute meeting time fairly
-          const sortedMembers = [...memberAvailability].sort((a, b) => a.assignedHours - b.assignedHours);
+          // Add all team members to this time slot
+          schedule[day][slotIndex].assignedMembers = memberAvailability.map(m => m.name);
           
-          const assignedMembers = [];
-          for (let i = 0; i < sortedMembers.length && assignedMembers.length < numWorkspaces; i++) {
-            const member = sortedMembers[i];
-            assignedMembers.push(member.name);
-            
+          // Add meeting time to each member's hours and shifts
+          memberAvailability.forEach(member => {
             // Add 0.5 hours per slot for meeting (since each slot is 30 min)
             member.assignedHours += 0.5;
             member.shifts.push({ day, time: timeSlot, isMeeting: true });
-          }
-          
-          schedule[day][slotIndex].assignedMembers = assignedMembers;
+          });
         }
       });
     });
