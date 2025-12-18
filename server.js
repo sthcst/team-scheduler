@@ -233,6 +233,34 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
     });
   });
   
+  // **IMPORTANT: Automatically assign everyone to team meeting time**
+  if (teamMeetingTime) {
+    const meetingStartTime = convertTimeToMinutes(teamMeetingTime.startTime);
+    const meetingEndTime = convertTimeToMinutes(teamMeetingTime.endTime);
+    const meetingDurationHours = (meetingEndTime - meetingStartTime) / 60;
+    
+    // Find all time slots that fall within the meeting time
+    days.forEach(day => {
+      timeSlots.forEach((timeSlot, slotIndex) => {
+        const slotStartTime = convertTimeToMinutes(timeSlot);
+        const slotEndTime = slotStartTime + 30; // 30-minute slots
+        
+        // Check if this slot overlaps with meeting time
+        if (slotStartTime >= meetingStartTime && slotStartTime < meetingEndTime) {
+          // Add all team members to this time slot
+          schedule[day][slotIndex].assignedMembers = memberAvailability.map(m => m.name);
+          
+          // Add meeting time to each member's hours and shifts
+          memberAvailability.forEach(member => {
+            // Add 0.5 hours per slot for meeting (since each slot is 30 min)
+            member.assignedHours += 0.5;
+            member.shifts.push({ day, time: timeSlot, isMeeting: true });
+          });
+        }
+      });
+    });
+  }
+  
   // Validate hour limits
   memberAvailability.forEach(member => {
     if (member.assignedHours > maxHoursPerPerson) {
@@ -278,6 +306,12 @@ function canAssignWithStaggering(member, day, timeSlot, slotIndex, timeSlots, sc
   }
   
   return true;
+}
+
+// Helper: Convert time string (HH:MM) to minutes since midnight
+function convertTimeToMinutes(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
 }
 
 // Helper: Generate 30-minute time slots
