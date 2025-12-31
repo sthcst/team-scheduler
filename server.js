@@ -109,6 +109,51 @@ app.get('/api/schedule-data', (req, res) => {
   res.json(scheduleData);
 });
 
+// Save current server data to browser (pre-populate localStorage)
+app.get('/api/export-current-data', (req, res) => {
+  // Return all current data on the server
+  res.json({
+    success: true,
+    data: scheduleData,
+    message: 'Current server data exported for client to save'
+  });
+});
+
+// Save test data to browser localStorage (via endpoint)
+app.post('/api/save-test-data', (req, res) => {
+  // Return all current schedule data for the client to save
+  res.json({ 
+    success: true, 
+    data: scheduleData,
+    message: 'Data ready to save - the client will store this in localStorage'
+  });
+});
+
+// Load test data
+app.post('/api/load-test-data', (req, res) => {
+  const { data } = req.body;
+  
+  if (!data) {
+    return res.status(400).json({ error: 'No data provided to load' });
+  }
+  
+  // Restore the schedule data
+  scheduleData = {
+    shiftTimes: data.shiftTimes || null,
+    teamMembers: data.teamMembers || [],
+    semesterType: data.semesterType || null,
+    teamMeetingTime: data.teamMeetingTime || null,
+    numWorkspaces: data.numWorkspaces || null,
+    includeSaturday: data.includeSaturday !== false,
+    generatedSchedule: null // Reset the generated schedule
+  };
+  
+  res.json({ 
+    success: true, 
+    message: 'Test data loaded successfully'
+  });
+});
+
 // Reset all data
 app.post('/api/reset', (req, res) => {
   scheduleData = {
@@ -241,6 +286,49 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
       
       schedule[day][slotIndex].assignedMembers = assignedThisSlot;
     });
+  });
+  
+  // Pass 2: Aggressively fill remaining hours for people below target
+  // Sort by most constrained (fewest available slots) and least hours assigned
+  const membersByConstraint = memberAvailability
+    .filter(member => member.assignedHours < maxHoursPerPerson)
+    .sort((a, b) => {
+      // Prioritize those with fewer available slots
+      if (a.totalAvailableHours !== b.totalAvailableHours) {
+        return a.totalAvailableHours - b.totalAvailableHours;
+      }
+      // Then by fewest hours assigned
+      return a.assignedHours - b.assignedHours;
+    });
+  
+  // For each person needing more hours, assign them to available slots
+  membersByConstraint.forEach(member => {
+    const hoursNeeded = maxHoursPerPerson - member.assignedHours;
+    const slotsNeeded = Math.ceil(hoursNeeded / 0.5);
+    let slotsAdded = 0;
+    
+    // Go through all available slots for this person
+    for (let i = 0; i < member.availableSlots.length && slotsAdded < slotsNeeded; i++) {
+      const slotKey = member.availableSlots[i];
+      const [dayIndex, slotIndex] = slotKey.split('-').map(Number);
+      const day = days[dayIndex];
+      const timeSlot = timeSlots[slotIndex];
+      
+      // Check if already assigned to this slot
+      const alreadyAssigned = member.shifts.some(s => s.day === day && s.time === timeSlot && !s.isMeeting);
+      
+      if (!alreadyAssigned) {
+        const currentAssignments = schedule[day][slotIndex].assignedMembers.length;
+        
+        // Add if under workspace limit
+        if (currentAssignments < numWorkspaces) {
+          member.assignedHours += 0.5;
+          member.shifts.push({ day, time: timeSlot });
+          schedule[day][slotIndex].assignedMembers.push(member.name);
+          slotsAdded++;
+        }
+      }
+    }
   });
   
   // **IMPORTANT: Automatically assign everyone to team meeting time**

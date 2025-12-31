@@ -1,7 +1,5 @@
 import React from 'react';
 
-import React from 'react';
-
 function AvailabilityGrid({ days, timeSlots, availability, onAvailabilityChange }) {
   // Map the displayed days to the full week (always 6 days: Mon-Sat)
   const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -26,7 +24,12 @@ function AvailabilityGrid({ days, timeSlots, availability, onAvailabilityChange 
   });
 
   return (
-    <div className="availability-grid">
+    <div 
+      className="availability-grid"
+      style={{
+        gridTemplateColumns: `auto repeat(${days.length}, 1fr)`
+      }}
+    >
       {/* Header: empty corner + day headers */}
       <div className="time-slot-label"></div>
       {days.map((day) => (

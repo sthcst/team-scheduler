@@ -22,7 +22,26 @@ function App() {
   // Fetch current data from server
   useEffect(() => {
     fetchScheduleData();
+    // Auto-save server data to localStorage on load
+    autoSaveServerData();
   }, []);
+
+  const autoSaveServerData = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/export-current-data`);
+      if (response.data && response.data.data) {
+        const dataToSave = response.data.data;
+        // Only save if there's actual data
+        if (dataToSave.teamMembers && dataToSave.teamMembers.length > 0) {
+          localStorage.setItem('teamSchedulerTestData', JSON.stringify(dataToSave));
+          console.log('✅ Auto-saved data from server');
+        }
+      }
+    } catch (err) {
+      // Silent fail - this is just auto-save
+      console.log('Auto-save skipped (no data yet)');
+    }
+  };
 
   const fetchScheduleData = async () => {
     try {
@@ -128,6 +147,58 @@ function App() {
     }
   };
 
+  const handleSaveTestData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_BASE_URL}/api/save-test-data`);
+      const dataToSave = response.data.data;
+      
+      if (!dataToSave.teamMembers || dataToSave.teamMembers.length === 0) {
+        alert('⚠️ No team members added yet. Please add team members first, then save.');
+        setLoading(false);
+        return;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('teamSchedulerTestData', JSON.stringify(dataToSave));
+      alert('✅ Test data saved! You can now load it anytime with "Load Test Data"');
+      setError(null);
+    } catch (err) {
+      setError('Error saving test data');
+      alert('❌ Error: ' + (err.response?.data?.error || err.message));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadTestData = async () => {
+    try {
+      setLoading(true);
+      const savedData = localStorage.getItem('teamSchedulerTestData');
+      
+      if (!savedData) {
+        alert('❌ No saved test data found. Save some data first!');
+        setLoading(false);
+        return;
+      }
+      
+      const testData = JSON.parse(savedData);
+      await axios.post(`${API_BASE_URL}/api/load-test-data`, { data: testData });
+      
+      // Reload the data
+      await fetchScheduleData();
+      setCurrentStep(4); // Jump to max hours step
+      alert('✅ Test data loaded! Jump to step 4 to regenerate the schedule.');
+      setError(null);
+    } catch (err) {
+      setError('Error loading test data');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -196,6 +267,22 @@ function App() {
 
         {(currentStep > 1 || schedule) && (
           <div className="button-group">
+            <button 
+              className="btn btn-secondary"
+              onClick={handleSaveTestData}
+              disabled={loading}
+              title="Save current team & shift data to browser (not the schedule)"
+            >
+              💾 Save Test Data
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={handleLoadTestData}
+              disabled={loading}
+              title="Load previously saved test data"
+            >
+              📂 Load Test Data
+            </button>
             <button 
               className="btn btn-secondary"
               onClick={handleReset}
