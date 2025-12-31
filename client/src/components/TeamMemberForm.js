@@ -8,11 +8,13 @@ function TeamMemberForm({ shiftTimes, teamMembers, onAddMember, onRemoveMember, 
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(null);
 
-  let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  // Always work with all 6 days internally
+  const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
-  // Add Saturday only if included in config
+  // Display days based on config
+  let displayDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   if (config && config.includeSaturday) {
-    days.push('Saturday');
+    displayDays.push('Saturday');
   }
 
   const generateTimeSlots = () => {
@@ -57,7 +59,8 @@ function TeamMemberForm({ shiftTimes, teamMembers, onAddMember, onRemoveMember, 
 
   const handleAvailabilityChange = (dayIndex, slotIndex) => {
     if (!availability) {
-      const newAvailability = days.map(() => Array(timeSlots.length).fill(true));
+      // Always create with 6 days (Monday-Saturday)
+      const newAvailability = allDays.map(() => Array(timeSlots.length).fill(true));
       newAvailability[dayIndex][slotIndex] = !newAvailability[dayIndex][slotIndex];
       setAvailability(newAvailability);
     } else {
@@ -174,7 +177,7 @@ function TeamMemberForm({ shiftTimes, teamMembers, onAddMember, onRemoveMember, 
 
         <h3>Mark Unavailable Times (Red = Unavailable for class/commitments)</h3>
         <AvailabilityGrid
-          days={days}
+          days={displayDays}
           timeSlots={timeSlots}
           availability={availability}
           onAvailabilityChange={handleAvailabilityChange}
