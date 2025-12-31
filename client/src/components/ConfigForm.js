@@ -6,6 +6,7 @@ function ConfigForm({ onSubmit, loading }) {
   const [meetingStartTime, setMeetingStartTime] = useState('14:00');
   const [meetingEndTime, setMeetingEndTime] = useState('15:00');
   const [numWorkspaces, setNumWorkspaces] = useState(1);
+  const [includeSaturday, setIncludeSaturday] = useState(true);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -37,7 +38,8 @@ function ConfigForm({ onSubmit, loading }) {
         startTime: meetingStartTime,
         endTime: meetingEndTime
       },
-      numWorkspaces: parseInt(numWorkspaces)
+      numWorkspaces: parseInt(numWorkspaces),
+      includeSaturday
     });
   };
 
@@ -107,6 +109,18 @@ function ConfigForm({ onSubmit, loading }) {
             step="1"
           />
           <small>This determines how many people can work on the same shift at the same time</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="includeSaturday">
+            <input
+              type="checkbox"
+              id="includeSaturday"
+              checked={includeSaturday}
+              onChange={(e) => setIncludeSaturday(e.target.checked)}
+            />
+            Include Saturday in Schedule
+          </label>
         </div>
 
         <button 

@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import AvailabilityGrid from './AvailabilityGrid';
 import './TeamMemberForm.css';
 
-function TeamMemberForm({ shiftTimes, teamMembers, onAddMember, onRemoveMember, onNext, loading }) {
+function TeamMemberForm({ shiftTimes, teamMembers, onAddMember, onRemoveMember, onNext, loading, config }) {
   const [name, setName] = useState('');
   const [availability, setAvailability] = useState(null);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(null);
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  
+  // Add Saturday only if included in config
+  if (config && config.includeSaturday) {
+    days.push('Saturday');
+  }
 
   const generateTimeSlots = () => {
     const slots = [];

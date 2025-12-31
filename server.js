@@ -17,6 +17,7 @@ let scheduleData = {
   semesterType: null,
   teamMeetingTime: null,
   numWorkspaces: null,
+  includeSaturday: true,
   generatedSchedule: null
 };
 
@@ -60,7 +61,7 @@ app.delete('/api/team-member/:index', (req, res) => {
 
 // Set schedule configuration
 app.post('/api/config', (req, res) => {
-  const { semesterType, teamMeetingTime, numWorkspaces } = req.body;
+  const { semesterType, teamMeetingTime, numWorkspaces, includeSaturday } = req.body;
   
   if (!semesterType || !teamMeetingTime || numWorkspaces === undefined) {
     return res.status(400).json({ error: 'Semester type, team meeting time, and workspace count are required' });
@@ -73,8 +74,9 @@ app.post('/api/config', (req, res) => {
   scheduleData.semesterType = semesterType;
   scheduleData.teamMeetingTime = teamMeetingTime;
   scheduleData.numWorkspaces = numWorkspaces;
+  scheduleData.includeSaturday = includeSaturday !== false; // Default to true if not specified
   
-  res.json({ success: true, message: 'Configuration set', data: { semesterType, teamMeetingTime, numWorkspaces } });
+  res.json({ success: true, message: 'Configuration set', data: { semesterType, teamMeetingTime, numWorkspaces, includeSaturday: scheduleData.includeSaturday } });
 });
 
 // Generate schedule
@@ -91,7 +93,8 @@ app.post('/api/generate-schedule', (req, res) => {
       scheduleData.teamMembers,
       scheduleData.teamMeetingTime,
       scheduleData.numWorkspaces,
-      maxHoursPerPerson
+      maxHoursPerPerson,
+      scheduleData.includeSaturday
     );
     
     scheduleData.generatedSchedule = schedule;
@@ -114,14 +117,21 @@ app.post('/api/reset', (req, res) => {
     semesterType: null,
     teamMeetingTime: null,
     numWorkspaces: null,
+    includeSaturday: true,
     generatedSchedule: null
   };
   res.json({ success: true, message: 'All data reset' });
 });
 
 // Schedule generation algorithm
-function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspaces, maxHoursPerPerson) {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspaces, maxHoursPerPerson, includeSaturday = true) {
+  let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  
+  // Add Saturday only if included
+  if (includeSaturday) {
+    days.push('Saturday');
+  }
+  
   const timeSlots = generateTimeSlots(shiftTimes.startTime, shiftTimes.endTime);
   
   // Calculate total available hours per person (considering unavailability)

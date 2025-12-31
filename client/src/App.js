@@ -7,7 +7,7 @@ import ConfigForm from './components/ConfigForm';
 import ScheduleDisplay from './components/ScheduleDisplay';
 
 // API base URL - uses environment variable in production, defaults to localhost for Electron
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -159,6 +159,7 @@ function App() {
             onRemoveMember={handleRemoveMember}
             onNext={handleTeamMembersComplete}
             loading={loading}
+            config={config}
           />
         )}
 
