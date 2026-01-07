@@ -1,0 +1,49 @@
+{
+  "shiftTimes": {
+    "startTime": "09:00",
+    "endTime": "17:00"
+  },
+  "teamMembers": [
+    {
+      "name": "Alice",
+      "availability": [
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false]
+      ]
+    },
+    {
+      "name": "Bob",
+      "availability": [
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false]
+      ]
+    },
+    {
+      "name": "Charlie",
+      "availability": [
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false],
+        [false, true, true, true, true, true, false]
+      ]
+    }
+  ],
+  "teamMeetingTime": {
+    "day": "Monday",
+    "startTime": "09:00",
+    "endTime": "10:00"
+  },
+  "numWorkspaces": 2,
+  "maxHoursPerPerson": 10,
+  "includeSaturday": false
+}

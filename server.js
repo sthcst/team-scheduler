@@ -320,8 +320,8 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
       if (!alreadyAssigned) {
         const currentAssignments = schedule[day][slotIndex].assignedMembers.length;
         
-        // Add if under workspace limit
-        if (currentAssignments < numWorkspaces) {
+        // Add if under workspace limit AND under hour limit
+        if (currentAssignments < numWorkspaces && member.assignedHours + 0.5 <= maxHoursPerPerson) {
           member.assignedHours += 0.5;
           member.shifts.push({ day, time: timeSlot });
           schedule[day][slotIndex].assignedMembers.push(member.name);
@@ -345,15 +345,19 @@ function generateSchedule(shiftTimes, teamMembers, teamMeetingTime, numWorkspace
       
       // Check if this slot overlaps with meeting time
       if (slotStartTime >= meetingStartTime && slotStartTime < meetingEndTime) {
-        // Add all team members to this time slot (only on the meeting day)
-        schedule[meetingDay][slotIndex].assignedMembers = memberAvailability.map(m => m.name);
+        // Add only members who have room in their schedule (don't exceed maxHoursPerPerson)
+        const membersForMeeting = memberAvailability.filter(m => m.assignedHours + 0.5 <= maxHoursPerPerson);
         
-        // Add meeting time to each member's hours and shifts
-        memberAvailability.forEach(member => {
-          // Add 0.5 hours per slot for meeting (since each slot is 30 min)
-          member.assignedHours += 0.5;
-          member.shifts.push({ day: meetingDay, time: timeSlot, isMeeting: true });
-        });
+        if (membersForMeeting.length > 0) {
+          schedule[meetingDay][slotIndex].assignedMembers = membersForMeeting.map(m => m.name);
+          
+          // Add meeting time to each member's hours and shifts (only those with capacity)
+          membersForMeeting.forEach(member => {
+            // Add 0.5 hours per slot for meeting (since each slot is 30 min)
+            member.assignedHours += 0.5;
+            member.shifts.push({ day: meetingDay, time: timeSlot, isMeeting: true });
+          });
+        }
       }
     });
   }
@@ -466,6 +470,21 @@ function calculateDuration(startTime, endTime) {
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Handle server errors
+server.on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason);
 });
